@@ -16,7 +16,12 @@ namespace GTFSRouteStopMatrix
         class TripTime
         {
             public Int32 trip_id { get; set; }
-            public TimeSpan stop_time { get; set; }
+            public TimeSpan? stop_time { get; set; }
+        }
+        class TripTimes
+        {
+            public Int32 trip_id { get; set; }
+            public TimeSpan?[] stop_times { get; set; } //indexed by stop sequence
         }
         class Stop
         {
@@ -32,9 +37,11 @@ namespace GTFSRouteStopMatrix
             public Decimal stop_lat { get; set; }
             public Decimal stop_lon { get; set; }
             public List<TripTime> stop_times { get; set; }
+            public Boolean stop_times_sorted { get; set; }
             public Stop()
             {
                 stop_times = new List<TripTime>();
+                stop_times_sorted = false;
             }
         }
         class StopCollection : List<Stop> { }
@@ -216,7 +223,54 @@ namespace GTFSRouteStopMatrix
                                 }
                             }
                         }
-                        stopCollection.AddRange(localStopCollection.Where(item => item.stop_sequence.HasValue).ToArray());
+                        var activeStopCollection = localStopCollection.Where(item => item.stop_sequence.HasValue).OrderBy(item=>item.stop_sequence).ToArray();
+                        var max_stop_sequence = activeStopCollection.Max(item => item.stop_sequence.Value);
+                        // build trip stop matrix
+                        var trip_stop_matrix = new List<TripTimes>();
+                        List<TripTimes> trip_stop_matrix_sorted = null;
+                        foreach (var trip in direction_trips)
+                        {
+                            var tripTimes = new TripTimes { trip_id = (Int32)trip["trip_id"], stop_times = new TimeSpan?[max_stop_sequence] };
+                            foreach (var activeStop in activeStopCollection)
+                            {
+                                var theseStops = trip.GetChildRows("trips_stop_times").Cast<DataRow>().ToList();
+                                var trip_stop_time = theseStops.FirstOrDefault(item => (Int32)item["stop_id"] == activeStop.stop_id);
+                                if (trip_stop_time != null)
+                                {
+                                    try
+                                    {
+                                        tripTimes.stop_times[activeStop.stop_sequence.Value - 1] = (TimeSpan)trip_stop_time["departure_time"];
+                                        theseStops.Remove(trip_stop_time); // we need to account for looping routes (a stop may occur twice);
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                }
+                            }
+                            trip_stop_matrix.Add(tripTimes);
+                        }
+                        for (var index = 0; index < max_stop_sequence; index++)
+                        {
+                            if (trip_stop_matrix.All(item => item.stop_times[index].HasValue))
+                            {
+                                trip_stop_matrix_sorted = trip_stop_matrix.OrderBy(item => item.stop_times[index].Value).ToList();
+                                break;
+                            }
+                        }
+                        if(trip_stop_matrix_sorted!=null)
+                        {
+                            foreach (var stop in activeStopCollection)
+                            {
+                                stop.stop_times = new List<TripTime>();
+                                foreach (var trip in trip_stop_matrix_sorted)
+                                {
+                                    stop.stop_times.Add(new TripTime { trip_id = trip.trip_id, stop_time = trip.stop_times[stop.stop_sequence.Value-1].HasValue ? trip.stop_times[stop.stop_sequence.Value-1].Value : (TimeSpan?)null });
+                                }
+                                stop.stop_times_sorted = true;
+                            }
+                        }
+                        stopCollection.AddRange(activeStopCollection);
                     }
                 }
             }
@@ -226,7 +280,7 @@ namespace GTFSRouteStopMatrix
                 output.WriteLine("route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
                 foreach (var stop in stopCollection.OrderBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
                 {
-                    output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", stop.route_id, stop.route_short_name, stop.route_long_name, direction[stop.direction_id], stop.stop_sequence, stop.stop_id, stop.stop_code, stop.stop_name, stop.stop_desc, stop.stop_lat, stop.stop_lon, String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => trip_time.stop_time.ToString()).ToArray())));
+                    output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", stop.route_id, stop.route_short_name, stop.route_long_name, direction[stop.direction_id], stop.stop_sequence, stop.stop_id, stop.stop_code, stop.stop_name, stop.stop_desc, stop.stop_lat, stop.stop_lon, stop.stop_times_sorted ? String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? trip_time.stop_time.Value.ToString() : "--:--:--").ToArray()) : String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => trip_time.stop_time.ToString()).ToArray())));
                 }
             }
         }
