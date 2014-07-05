@@ -60,7 +60,9 @@ namespace GTFSRouteStopMatrix
                     {
                         try
                         {
-                            if (table.Columns[index].DataType == typeof(Decimal))
+                            if (table.Columns[index].DataType == typeof(DateTime))
+                                newRow[index] = DateTime.Parse(fields[index]);
+                            else if (table.Columns[index].DataType == typeof(Decimal))
                                 newRow[index] = Decimal.Parse(fields[index]);
                             else if (table.Columns[index].DataType == typeof(Double))
                                 newRow[index] = Double.Parse(fields[index]);
@@ -82,6 +84,7 @@ namespace GTFSRouteStopMatrix
             var GTFSPath = args[0];
             var service_id = Int32.Parse(args[1]);
             var CSVPath = args[2];
+            var dataSet = new DataSet();
             var routes = new DataTable();
             var stop_times = new DataTable();
             var stops = new DataTable();
@@ -126,6 +129,13 @@ namespace GTFSRouteStopMatrix
                     }
                 }
             }
+            dataSet.Tables.Add(routes);
+            dataSet.Tables.Add(stop_times);
+            dataSet.Tables.Add(stops);
+            dataSet.Tables.Add(trips);
+            dataSet.Relations.Add(new DataRelation("routes_trips", routes.Columns["route_id"], trips.Columns["route_id"]));
+            dataSet.Relations.Add(new DataRelation("trips_stop_times", trips.Columns["trip_id"], stop_times.Columns["trip_id"]));
+            dataSet.Relations.Add(new DataRelation("stops_stop_times", stops.Columns["stop_id"], stop_times.Columns["stop_id"]));
             var stopCollection = new StopCollection();
             foreach (var route in routes.Rows.Cast<DataRow>())
             {
@@ -134,15 +144,14 @@ namespace GTFSRouteStopMatrix
                 var route_long_name = (String)route["route_long_name"];
                 foreach (var direction_id in new Int32[] { 0, 1 })
                 {
-                    var direction_trips = trips.Rows.Cast<DataRow>().Where(item => item["route_id"].Equals(route_id) && item["service_id"].Equals(service_id) && item["direction_id"].Equals(direction_id)).ToArray();
+                    var direction_trips = route.GetChildRows("routes_trips").Cast<DataRow>().Where(item => item["service_id"].Equals(service_id) && item["direction_id"].Equals(direction_id)).ToArray();
                     if (direction_trips.Length > 0)
                     {
                         var localStopCollection = stops.Rows.Cast<DataRow>().Select(item => new Stop { route_id = route_id, route_short_name = route_short_name, route_long_name = route_long_name, direction_id = direction_id, stop_id = (Int32)item["stop_id"], stop_code = (String)item["stop_code"], stop_name = (String)item["stop_name"], stop_desc = (String)item["stop_desc"], stop_lat = (Decimal)item["stop_lat"], stop_lon = (Decimal)item["stop_lon"] }).ToList();
                         foreach (var trip in direction_trips)
                         {
-                            var trip_id = (Int32)trip["trip_id"];
-                            var trip_stop_times = stop_times.Rows.Cast<DataRow>().Where(item => item["trip_id"].Equals(trip_id)).OrderBy(item => (Int32)item["stop_sequence"]);
-                            Console.WriteLine(String.Format("{0}\t{1}\t{2}", route_short_name, direction_id, trip_id));
+                            var trip_stop_times = trip.GetChildRows("trips_stop_times").Cast<DataRow>().OrderBy(item => (Int32)item["stop_sequence"]);
+                            Console.WriteLine(String.Format("{0}\t{1}\t{2}", route_short_name, direction_id, trip["trip_id"]));
                             if (localStopCollection.Any(item => item.stop_sequence.HasValue))
                             {
                                 // here's the interesting part - for each subsequent trip on a route, reorder portions of the localStopCollection stops to wedge in stops that were not already in the sequence
