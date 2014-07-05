@@ -13,6 +13,11 @@ namespace GTFSRouteStopMatrix
 {
     class Program
     {
+        class TripTime
+        {
+            public Int32 trip_id { get; set; }
+            public TimeSpan stop_time { get; set; }
+        }
         class Stop
         {
             public Int32 route_id { get; set; }
@@ -26,10 +31,10 @@ namespace GTFSRouteStopMatrix
             public String stop_desc { get; set; }
             public Decimal stop_lat { get; set; }
             public Decimal stop_lon { get; set; }
-            public List<TimeSpan> stop_times { get; set; }
+            public List<TripTime> stop_times { get; set; }
             public Stop()
             {
-                stop_times = new List<TimeSpan>();
+                stop_times = new List<TripTime>();
             }
         }
         class StopCollection : List<Stop> { }
@@ -168,24 +173,34 @@ namespace GTFSRouteStopMatrix
                                         {
                                             try
                                             {
-                                                existingStop.stop_times.Add((TimeSpan)trip_stop_time["departure_time"]);
+                                                existingStop.stop_times.Add(new TripTime { trip_id = (Int32)trip_stop_time["trip_id"], stop_time = (TimeSpan)trip_stop_time["departure_time"] });
                                             }
                                             catch { }
+                                            var currentSequence = existingStop.stop_sequence.Value;
                                             while (pendingStops.Count > 0)
                                             {
                                                 // we need to shift all the later sequences up in localStopCollection for each pending stop
-                                                var currentSequence = existingStop.stop_sequence.Value;
                                                 var upperPortion = localStopCollection.Where(item => item.stop_sequence >= currentSequence).ToList();
                                                 upperPortion.ForEach(item => item.stop_sequence++);
                                                 var pendingStop = pendingStops.Dequeue();
                                                 var newStop = localStopCollection.Single(item => item.stop_id.Equals((Int32)pendingStop["stop_id"]));
                                                 newStop.stop_sequence = currentSequence;
-                                                newStop.stop_times.Add((TimeSpan)pendingStop["departure_time"]);
+                                                newStop.stop_times.Add(new TripTime { trip_id = (Int32)pendingStop["trip_id"], stop_time = (TimeSpan)pendingStop["departure_time"] });
+                                                currentSequence++;
                                             }
                                         }
                                         else
                                             pendingStops.Enqueue(trip_stop_time);
                                     }
+                                    while (pendingStops.Count > 0)
+                                    {
+                                        // we need to append any stops not already represented in the existing trips
+                                        var pendingStop = pendingStops.Dequeue();
+                                        var newStop = localStopCollection.Single(item => item.stop_id.Equals((Int32)pendingStop["stop_id"]));
+                                        newStop.stop_sequence = localStopCollection.Where(item => item.stop_sequence.HasValue).Max(item => item.stop_sequence.Value) + 1;
+                                        newStop.stop_times.Add(new TripTime { trip_id = (Int32)pendingStop["trip_id"], stop_time = (TimeSpan)pendingStop["departure_time"] });
+                                    }
+
                                 }
                                 // else we don't know what to do yet
                             }
@@ -197,7 +212,7 @@ namespace GTFSRouteStopMatrix
                                     var stop_sequence = (Int32)trip_stop_time["stop_sequence"];
                                     var localStop = localStopCollection.Single(item => item.stop_id.Equals(stop_id));
                                     localStop.stop_sequence = stop_sequence;
-                                    localStop.stop_times.Add((TimeSpan)trip_stop_time["departure_time"]);
+                                    localStop.stop_times.Add(new TripTime { trip_id = (Int32)trip_stop_time["trip_id"], stop_time = (TimeSpan)trip_stop_time["departure_time"] });
                                 }
                             }
                         }
@@ -208,10 +223,10 @@ namespace GTFSRouteStopMatrix
             using (var output = File.CreateText(CSVPath))
             {
                 var direction = new String[] { "Outbound", "Inbound" };
-                output.WriteLine("route_id,route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
+                output.WriteLine("route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
                 foreach (var stop in stopCollection.OrderBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
                 {
-                    output.WriteLine(String.Format("{0},\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", stop.route_id, stop.route_short_name, stop.route_long_name, direction[stop.direction_id], stop.stop_sequence, stop.stop_id, stop.stop_code, stop.stop_name, stop.stop_desc, stop.stop_lat, stop.stop_lon, String.Join(", ", stop.stop_times.OrderBy(stop_time => stop_time).Select(stop_time => stop_time.ToString()).ToArray())));
+                    output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", stop.route_id, stop.route_short_name, stop.route_long_name, direction[stop.direction_id], stop.stop_sequence, stop.stop_id, stop.stop_code, stop.stop_name, stop.stop_desc, stop.stop_lat, stop.stop_lon, String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => trip_time.stop_time.ToString()).ToArray())));
                 }
             }
         }
