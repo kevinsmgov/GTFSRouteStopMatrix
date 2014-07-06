@@ -280,7 +280,21 @@ namespace GTFSRouteStopMatrix
                 output.WriteLine("route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
                 foreach (var stop in stopCollection.OrderBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
                 {
-                    output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", stop.route_id, stop.route_short_name, stop.route_long_name, direction[stop.direction_id], stop.stop_sequence, stop.stop_id, stop.stop_code, stop.stop_name, stop.stop_desc, stop.stop_lat, stop.stop_lon, stop.stop_times_sorted ? String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? trip_time.stop_time.Value.ToString() : "--:--:--").ToArray()) : String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => trip_time.stop_time.ToString()).ToArray())));
+                    output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"", 
+                        stop.route_id, 
+                        stop.route_short_name, 
+                        stop.route_long_name, 
+                        direction[stop.direction_id], 
+                        stop.stop_sequence, 
+                        stop.stop_id, 
+                        stop.stop_code, 
+                        stop.stop_name, 
+                        stop.stop_desc, 
+                        stop.stop_lat, 
+                        stop.stop_lon, 
+                        stop.stop_times_sorted ? 
+                        String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? trip_time.stop_time.Value.ToString() : "--:--:--").ToArray()) : 
+                        String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => trip_time.stop_time.ToString()).ToArray())));
                 }
             }
         }
