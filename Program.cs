@@ -323,47 +323,36 @@ namespace GTFSRouteStopMatrix
                         new XElement(o + "OfficeDocumentSettings", new XAttribute(XName.Get("xmlns", ""), o)),
                         new XElement(x + "ExcelWorkbook", new XAttribute(XName.Get("xmlns", ""), x)));
 
-                    foreach (var route in routes.Rows.Cast<DataRow>())
+                    var routeCollection = stopCollection.Where(item=>item.stop_times_sorted).GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) });
+                    foreach (var thisRoute in routeCollection)
                     {
-                        var route_id = (Int32)route["route_id"];
-                        var route_short_name = (String)route["route_short_name"];
-                        var route_long_name = (String)route["route_long_name"];
-                        foreach (var direction_id in new Int32[] { 0, 1 })
+                        foreach (var thisDirection in thisRoute.directions)
                         {
-                            var theseStops = stopCollection.Where(item => item.route_id.Equals(route_id) && item.direction_id.Equals(direction_id)).OrderBy(item => item.stop_sequence);
-                            if (theseStops.Count() > 0)
+                            var worksheet = new XElement(mainNamespace + "Worksheet", new XAttribute(ss + "Name", String.Format("{0} - {1}", thisRoute.route_short_name, direction[thisDirection.direction_id])));
+                            var table = new XElement(mainNamespace + "Table");
                             {
-                                var worksheet = new XElement(mainNamespace + "Worksheet", new XAttribute(ss + "Name", String.Format("{0} - {1}", route["route_short_name"], direction[direction_id])));
-                                var table = new XElement(mainNamespace + "Table");
-                                //foreach (var stop in theseStops)
-                                //{
-                                //    var column = new XElement(mainNamespace + "Column", new XAttribute(ss + "Width", "150"));
-                                //    table.Add(column);
-                                //}
+                                var headerRow = new XElement(mainNamespace + "Row");
+                                foreach (var stop in thisDirection.stops)
                                 {
-                                    var headerRow = new XElement(mainNamespace + "Row");
-                                    foreach (var stop in theseStops)
-                                    {
-                                        var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop.stop_desc));
-                                        headerRow.Add(cell);
-                                    }
-                                    table.Add(headerRow);
+                                    var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop.stop_desc));
+                                    headerRow.Add(cell);
                                 }
-                                var maxSequence = theseStops.First().stop_times.Count;
-                                for (var index = 0; index < maxSequence; index++)
-                                {
-                                    var row = new XElement(mainNamespace + "Row");
-                                    foreach (var stop in theseStops)
-                                    {
-                                        var stop_time = stop.stop_times[index];
-                                        var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop_time.stop_time.HasValue ? stop_time.stop_time.ToString() : "--:--:--"));
-                                        row.Add(cell);
-                                    }
-                                    table.Add(row);
-                                }
-                                worksheet.Add(table);
-                                workbook.Add(worksheet);
+                                table.Add(headerRow);
                             }
+                            var maxSequence = thisDirection.stops.First().stop_times.Count;
+                            for (var index = 0; index < maxSequence; index++)
+                            {
+                                var row = new XElement(mainNamespace + "Row");
+                                foreach (var stop in thisDirection.stops)
+                                {
+                                    var stop_time = stop.stop_times[index];
+                                    var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop_time.stop_time.HasValue ? stop_time.stop_time.ToString() : "--:--:--"));
+                                    row.Add(cell);
+                                }
+                                table.Add(row);
+                            }
+                            worksheet.Add(table);
+                            workbook.Add(worksheet);
                         }
                     }
                     spreadsheetDocument.Add(workbook);
@@ -371,7 +360,7 @@ namespace GTFSRouteStopMatrix
                 }
             }
             else
-                Console.WriteLine("USAGE: [GTFS.zip path] [service id] [output csv path]");
+                Console.WriteLine("USAGE: [GTFS.zip path] [service id] [output csv path] [output xml path]");
         }
     }
 }
