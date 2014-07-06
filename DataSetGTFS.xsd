@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="DataSetGTFS" targetNamespace="http://tempuri.org/DataSetGTFS.xsd" xmlns:mstns="http://tempuri.org/DataSetGTFS.xsd" xmlns="http://tempuri.org/DataSetGTFS.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="DataSetGTFS" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="DataSetGTFS" msprop:Generator_UserDSName="DataSetGTFS">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="route" msprop:Generator_TableClassName="routeDataTable" msprop:Generator_TableVarName="tableroute" msprop:Generator_RowChangedName="routeRowChanged" msprop:Generator_TablePropName="route" msprop:Generator_RowDeletingName="routeRowDeleting" msprop:Generator_RowChangingName="routeRowChanging" msprop:Generator_RowEvHandlerName="routeRowChangeEventHandler" msprop:Generator_RowDeletedName="routeRowDeleted" msprop:Generator_RowClassName="routeRow" msprop:Generator_UserTableName="route" msprop:Generator_RowEvArgName="routeRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="route_id" msprop:Generator_ColumnVarNameInTable="columnroute_id" msprop:Generator_ColumnPropNameInRow="route_id" msprop:Generator_ColumnPropNameInTable="route_idColumn" msprop:Generator_UserColumnName="route_id" type="xs:int" />
+              <xs:element name="route_short_name" msprop:Generator_ColumnVarNameInTable="columnroute_short_name" msprop:Generator_ColumnPropNameInRow="route_short_name" msprop:Generator_ColumnPropNameInTable="route_short_nameColumn" msprop:Generator_UserColumnName="route_short_name" type="xs:string" minOccurs="0" />
+              <xs:element name="route_long_name" msprop:Generator_ColumnVarNameInTable="columnroute_long_name" msprop:Generator_ColumnPropNameInRow="route_long_name" msprop:Generator_ColumnPropNameInTable="route_long_nameColumn" msprop:Generator_UserColumnName="route_long_name" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="trip" msprop:Generator_TableClassName="tripDataTable" msprop:Generator_TableVarName="tabletrip" msprop:Generator_RowChangedName="tripRowChanged" msprop:Generator_TablePropName="trip" msprop:Generator_RowDeletingName="tripRowDeleting" msprop:Generator_RowChangingName="tripRowChanging" msprop:Generator_RowEvHandlerName="tripRowChangeEventHandler" msprop:Generator_RowDeletedName="tripRowDeleted" msprop:Generator_RowClassName="tripRow" msprop:Generator_UserTableName="trip" msprop:Generator_RowEvArgName="tripRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="route_id" msprop:Generator_ColumnVarNameInTable="columnroute_id" msprop:Generator_ColumnPropNameInRow="route_id" msprop:Generator_ColumnPropNameInTable="route_idColumn" msprop:Generator_UserColumnName="route_id" type="xs:int" minOccurs="0" />
+              <xs:element name="service_id" msprop:Generator_ColumnVarNameInTable="columnservice_id" msprop:Generator_ColumnPropNameInRow="service_id" msprop:Generator_ColumnPropNameInTable="service_idColumn" msprop:Generator_UserColumnName="service_id" type="xs:int" minOccurs="0" />
+              <xs:element name="trip_id" msprop:Generator_ColumnVarNameInTable="columntrip_id" msprop:Generator_ColumnPropNameInRow="trip_id" msprop:Generator_ColumnPropNameInTable="trip_idColumn" msprop:Generator_UserColumnName="trip_id" type="xs:int" />
+              <xs:element name="direction_id" msprop:Generator_ColumnVarNameInTable="columndirection_id" msprop:Generator_ColumnPropNameInRow="direction_id" msprop:Generator_ColumnPropNameInTable="direction_idColumn" msprop:Generator_UserColumnName="direction_id" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="stop" msprop:Generator_TableClassName="stopDataTable" msprop:Generator_TableVarName="tablestop" msprop:Generator_RowChangedName="stopRowChanged" msprop:Generator_TablePropName="stop" msprop:Generator_RowDeletingName="stopRowDeleting" msprop:Generator_RowChangingName="stopRowChanging" msprop:Generator_RowEvHandlerName="stopRowChangeEventHandler" msprop:Generator_RowDeletedName="stopRowDeleted" msprop:Generator_RowClassName="stopRow" msprop:Generator_UserTableName="stop" msprop:Generator_RowEvArgName="stopRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="stop_id" msprop:Generator_ColumnVarNameInTable="columnstop_id" msprop:Generator_ColumnPropNameInRow="stop_id" msprop:Generator_ColumnPropNameInTable="stop_idColumn" msprop:Generator_UserColumnName="stop_id" type="xs:int" />
+              <xs:element name="stop_code" msprop:Generator_ColumnVarNameInTable="columnstop_code" msprop:Generator_ColumnPropNameInRow="stop_code" msprop:Generator_ColumnPropNameInTable="stop_codeColumn" msprop:Generator_UserColumnName="stop_code" type="xs:string" minOccurs="0" />
+              <xs:element name="stop_name" msprop:Generator_ColumnVarNameInTable="columnstop_name" msprop:Generator_ColumnPropNameInRow="stop_name" msprop:Generator_ColumnPropNameInTable="stop_nameColumn" msprop:Generator_UserColumnName="stop_name" type="xs:string" minOccurs="0" />
+              <xs:element name="stop_desc" msprop:Generator_ColumnVarNameInTable="columnstop_desc" msprop:Generator_ColumnPropNameInRow="stop_desc" msprop:Generator_ColumnPropNameInTable="stop_descColumn" msprop:Generator_UserColumnName="stop_desc" type="xs:string" minOccurs="0" />
+              <xs:element name="stop_lat" msprop:Generator_ColumnVarNameInTable="columnstop_lat" msprop:Generator_ColumnPropNameInRow="stop_lat" msprop:Generator_ColumnPropNameInTable="stop_latColumn" msprop:Generator_UserColumnName="stop_lat" type="xs:decimal" minOccurs="0" />
+              <xs:element name="stop_lon" msprop:Generator_ColumnVarNameInTable="columnstop_lon" msprop:Generator_ColumnPropNameInRow="stop_lon" msprop:Generator_ColumnPropNameInTable="stop_lonColumn" msprop:Generator_UserColumnName="stop_lon" type="xs:decimal" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="stop_time" msprop:Generator_TableClassName="stop_timeDataTable" msprop:Generator_TableVarName="tablestop_time" msprop:Generator_RowChangedName="stop_timeRowChanged" msprop:Generator_TablePropName="stop_time" msprop:Generator_RowDeletingName="stop_timeRowDeleting" msprop:Generator_RowChangingName="stop_timeRowChanging" msprop:Generator_RowEvHandlerName="stop_timeRowChangeEventHandler" msprop:Generator_RowDeletedName="stop_timeRowDeleted" msprop:Generator_RowClassName="stop_timeRow" msprop:Generator_UserTableName="stop_time" msprop:Generator_RowEvArgName="stop_timeRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="trip_id" msprop:Generator_ColumnVarNameInTable="columntrip_id" msprop:Generator_ColumnPropNameInRow="trip_id" msprop:Generator_ColumnPropNameInTable="trip_idColumn" msprop:Generator_UserColumnName="trip_id" type="xs:int" />
+              <xs:element name="departure_time" msprop:Generator_ColumnVarNameInTable="columndeparture_time" msprop:Generator_ColumnPropNameInRow="departure_time" msprop:Generator_ColumnPropNameInTable="departure_timeColumn" msprop:Generator_UserColumnName="departure_time" type="xs:duration" minOccurs="0" />
+              <xs:element name="stop_id" msprop:Generator_ColumnVarNameInTable="columnstop_id" msprop:Generator_ColumnPropNameInRow="stop_id" msprop:Generator_ColumnPropNameInTable="stop_idColumn" msprop:Generator_UserColumnName="stop_id" type="xs:int" />
+              <xs:element name="stop_sequence" msprop:Generator_ColumnVarNameInTable="columnstop_sequence" msprop:Generator_ColumnPropNameInRow="stop_sequence" msprop:Generator_ColumnPropNameInTable="stop_sequenceColumn" msprop:Generator_UserColumnName="stop_sequence" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+    <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:route" />
+      <xs:field xpath="mstns:route_id" />
+    </xs:unique>
+    <xs:unique name="trip_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:trip" />
+      <xs:field xpath="mstns:trip_id" />
+    </xs:unique>
+    <xs:unique name="stop_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:stop" />
+      <xs:field xpath="mstns:stop_id" />
+    </xs:unique>
+  </xs:element>
+  <xs:annotation>
+    <xs:appinfo>
+      <msdata:Relationship name="FK_route_trip" msdata:parent="route" msdata:child="trip" msdata:parentkey="route_id" msdata:childkey="route_id" msprop:Generator_UserChildTable="trip" msprop:Generator_ChildPropName="GettripRows" msprop:Generator_UserRelationName="FK_route_trip" msprop:Generator_ParentPropName="routeRow" msprop:Generator_RelationVarName="relationFK_route_trip" msprop:Generator_UserParentTable="route" />
+      <msdata:Relationship name="FK_trip_stop_time" msdata:parent="trip" msdata:child="stop_time" msdata:parentkey="trip_id" msdata:childkey="trip_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_trip_stop_time" msprop:Generator_ParentPropName="tripRow" msprop:Generator_RelationVarName="relationFK_trip_stop_time" msprop:Generator_UserParentTable="trip" />
+      <msdata:Relationship name="FK_stop_stop_time" msdata:parent="stop" msdata:child="stop_time" msdata:parentkey="stop_id" msdata:childkey="stop_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_stop_stop_time" msprop:Generator_ParentPropName="stopRow" msprop:Generator_RelationVarName="relationFK_stop_stop_time" msprop:Generator_UserParentTable="stop" />
+    </xs:appinfo>
+  </xs:annotation>
+</xs:schema>
