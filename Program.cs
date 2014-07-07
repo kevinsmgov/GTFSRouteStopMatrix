@@ -1,44 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 
 using Microsoft.VisualBasic.FileIO;
-using System.Data;
-using System.Xml.Linq;
-using System.Xml;
-using System.Text.RegularExpressions;
 
 namespace GTFSRouteStopMatrix
 {
     class Program
     {
-        class TripTime
+        [DataContract]
+        public class Geometry
         {
+            [DataMember(Order = 0)]
+            public string type = "Point";
+            [DataMember(Order = 1)]
+            public Decimal[] coordinates { get; set; }
+        }
+        [DataContract]
+        public class Feature
+        {
+            [DataMember(Order = 0)]
+            public string type = "Feature";
+            [DataMember(Order = 1)]
+            public Stop properties { get; set; }
+            [DataMember(Order = 2)]
+            public Geometry geometry { get; set; }
+        }
+        [DataContract]
+        public class CRS
+        {
+            [DataContract]
+            public class Properties
+            {
+                [DataMember]
+                public String name = "urn:ogc:def:crs:OGC:1.3:CRS84";
+            }
+            [DataMember(Order = 0)]
+            public string type = "name";
+            [DataMember(Order = 1)]
+            public Properties properties = new Properties();
+        }
+        [DataContract]
+        public class FeatureCollection
+        {
+            [DataMember(Order = 0)]
+            public string type = "FeatureCollection";
+            [DataMember(Order = 1)]
+            public CRS crs = new CRS();
+            [DataMember(Order = 2)]
+            public List<Feature> features { get; set; }
+            public FeatureCollection()
+            {
+                features = new List<Feature>();
+            }
+        }
+
+        [DataContract]
+        public class TripTime
+        {
+            [DataMember]
             public Int32 trip_id { get; set; }
             public TimeSpan? stop_time { get; set; }
+            [DataMember(Name = "stop_time")]
+            private String stop_time_string;
+            [OnSerializing]
+            internal void OnSerializingMethod(StreamingContext context)
+            {
+                this.stop_time_string = this.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(this.stop_time.ToString(), 8) : null;
+            }
         }
-        class TripTimes
+        public class TripTimes
         {
             public Int32 trip_id { get; set; }
             public TimeSpan?[] stop_times { get; set; } //indexed by stop sequence
         }
-        class Stop
+        [DataContract]
+        public class Stop
         {
+            [DataMember(Order = 0)]
             public Int32 route_id { get; set; }
+            [DataMember(Order = 1)]
             public String route_short_name { get; set; }
+            [DataMember(Order = 2)]
             public String route_long_name { get; set; }
+            [DataMember(Order = 3)]
             public Int32 direction_id { get; set; }
+            [DataMember(Order = 4)]
             public Int32? stop_sequence { get; set; }
+            [DataMember(Order = 5)]
             public Int32 stop_id { get; set; }
+            [DataMember(Order = 6)]
             public String stop_code { get; set; }
+            [DataMember(Order = 7)]
             public String stop_name { get; set; }
+            [DataMember(Order = 8)]
             public String stop_desc { get; set; }
+            [DataMember(Order = 9)]
             public Decimal stop_lat { get; set; }
+            [DataMember(Order = 10)]
             public Decimal stop_lon { get; set; }
+            [DataMember(Order = 11)]
             public List<TripTime> stop_times { get; set; }
             public Boolean stop_times_sorted { get; set; }
             public Stop()
@@ -47,7 +116,9 @@ namespace GTFSRouteStopMatrix
                 stop_times_sorted = false;
             }
         }
-        class StopCollection : List<Stop> { }
+
+        public class StopCollection : List<Stop> { }
+
         static void LoadTable(DataTable table, ZipArchiveEntry entry)
         {
             var timespanExpression = new Regex("([0-9]+):([0-9]+):([0-9]+)");
@@ -81,7 +152,7 @@ namespace GTFSRouteStopMatrix
                             else if (table.Columns[index].DataType == typeof(TimeSpan))
                             {
                                 var timeSpanPart = fieldValue.Split(':');
-                                if(timeSpanPart.Length == 3)
+                                if (timeSpanPart.Length == 3)
                                     newRow[index] = new TimeSpan(Int32.Parse(timeSpanPart[0]), Int32.Parse(timeSpanPart[1]), Int32.Parse(timeSpanPart[2]));
                             }
                             else
@@ -95,12 +166,13 @@ namespace GTFSRouteStopMatrix
         }
         static void Main(string[] args)
         {
-            if (args.Length == 4)
+            if (args.Length == 5)
             {
                 var GTFSPath = args[0];
                 var service_id = Int32.Parse(args[1]);
                 var CSVPath = args[2];
-                var XMLPath = args[3];
+                var JSONPath = args[3];
+                var XMLPath = args[4];
                 var dataSet = new DataSetGTFS();
                 using (var zipStream = File.OpenRead(args[0]))
                 {
@@ -136,7 +208,7 @@ namespace GTFSRouteStopMatrix
                             var localStopCollection = dataSet.stop.Cast<DataSetGTFS.stopRow>().Select(item => new Stop { route_id = route.route_id, route_short_name = route.route_short_name, route_long_name = route.route_long_name, direction_id = direction_id, stop_id = item.stop_id, stop_code = item.stop_code, stop_name = item.stop_name, stop_desc = item.stop_desc, stop_lat = item.stop_lat, stop_lon = item.stop_lon }).ToList();
                             foreach (var trip in direction_trips)
                             {
-                                var trip_stop_times = trip.Getstop_timeRows().OrderBy(item=>item.stop_sequence);
+                                var trip_stop_times = trip.Getstop_timeRows().OrderBy(item => item.stop_sequence);
                                 Console.WriteLine(String.Format("{0}\t{1}\t{2}", route.route_short_name, direction_id, trip.trip_id));
                                 if (localStopCollection.Any(item => item.stop_sequence.HasValue))
                                 {
@@ -267,9 +339,17 @@ namespace GTFSRouteStopMatrix
                             stop.stop_lat,
                             stop.stop_lon,
                             stop.stop_times_sorted ?
-                            String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(),8) : "--:--:--").ToArray()) :
+                            String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(), 8) : "--:--:--").ToArray()) :
                             String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(), 8)).ToArray())));
                     }
+                }
+                using (var output = File.Create(JSONPath))
+                {
+                    var serializer = new DataContractJsonSerializer(typeof(FeatureCollection));
+                    var featureCollection = new FeatureCollection();
+                    foreach (var stop in stopCollection.Where(item => item.stop_times_sorted).OrderBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
+                        featureCollection.features.Add(new Feature { properties = stop, geometry = new Geometry { coordinates = new Decimal[] { stop.stop_lon, stop.stop_lat } } });
+                    serializer.WriteObject(output, featureCollection);
                 }
                 using (var xmlWriter = XmlWriter.Create(XMLPath))
                 {
@@ -292,7 +372,7 @@ namespace GTFSRouteStopMatrix
                         new XElement(o + "OfficeDocumentSettings", new XAttribute(XName.Get("xmlns", ""), o)),
                         new XElement(x + "ExcelWorkbook", new XAttribute(XName.Get("xmlns", ""), x)));
 
-                    var routeCollection = stopCollection.Where(item=>item.stop_times_sorted).GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) });
+                    var routeCollection = stopCollection.Where(item => item.stop_times_sorted).GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) });
                     foreach (var thisRoute in routeCollection)
                     {
                         foreach (var thisDirection in thisRoute.directions)
@@ -329,7 +409,7 @@ namespace GTFSRouteStopMatrix
                 }
             }
             else
-                Console.WriteLine("USAGE: [GTFS.zip path] [service id] [output csv path] [output xml path]");
+                Console.WriteLine("USAGE: [GTFS.zip path] [service id] [output csv path] [output json path] [output xml path]");
         }
     }
 }
