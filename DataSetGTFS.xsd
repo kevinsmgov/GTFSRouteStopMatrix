@@ -12,7 +12,7 @@
   <xs:element name="DataSetGTFS" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="DataSetGTFS" msprop:Generator_UserDSName="DataSetGTFS">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="route" msprop:Generator_TableClassName="routeDataTable" msprop:Generator_TableVarName="tableroute" msprop:Generator_RowChangedName="routeRowChanged" msprop:Generator_TablePropName="route" msprop:Generator_RowDeletingName="routeRowDeleting" msprop:Generator_RowChangingName="routeRowChanging" msprop:Generator_RowEvHandlerName="routeRowChangeEventHandler" msprop:Generator_RowDeletedName="routeRowDeleted" msprop:Generator_RowClassName="routeRow" msprop:Generator_UserTableName="route" msprop:Generator_RowEvArgName="routeRowChangeEvent">
+        <xs:element name="route" msprop:Generator_TableClassName="routeDataTable" msprop:Generator_TableVarName="tableroute" msprop:Generator_TablePropName="route" msprop:Generator_RowDeletingName="routeRowDeleting" msprop:Generator_RowChangingName="routeRowChanging" msprop:Generator_RowEvHandlerName="routeRowChangeEventHandler" msprop:Generator_RowDeletedName="routeRowDeleted" msprop:Generator_UserTableName="route" msprop:Generator_RowChangedName="routeRowChanged" msprop:Generator_RowEvArgName="routeRowChangeEvent" msprop:Generator_RowClassName="routeRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="route_id" msprop:Generator_ColumnVarNameInTable="columnroute_id" msprop:Generator_ColumnPropNameInRow="route_id" msprop:Generator_ColumnPropNameInTable="route_idColumn" msprop:Generator_UserColumnName="route_id" type="xs:int" />
@@ -21,7 +21,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="trip" msprop:Generator_TableClassName="tripDataTable" msprop:Generator_TableVarName="tabletrip" msprop:Generator_RowChangedName="tripRowChanged" msprop:Generator_TablePropName="trip" msprop:Generator_RowDeletingName="tripRowDeleting" msprop:Generator_RowChangingName="tripRowChanging" msprop:Generator_RowEvHandlerName="tripRowChangeEventHandler" msprop:Generator_RowDeletedName="tripRowDeleted" msprop:Generator_RowClassName="tripRow" msprop:Generator_UserTableName="trip" msprop:Generator_RowEvArgName="tripRowChangeEvent">
+        <xs:element name="trip" msprop:Generator_TableClassName="tripDataTable" msprop:Generator_TableVarName="tabletrip" msprop:Generator_TablePropName="trip" msprop:Generator_RowDeletingName="tripRowDeleting" msprop:Generator_RowChangingName="tripRowChanging" msprop:Generator_RowEvHandlerName="tripRowChangeEventHandler" msprop:Generator_RowDeletedName="tripRowDeleted" msprop:Generator_UserTableName="trip" msprop:Generator_RowChangedName="tripRowChanged" msprop:Generator_RowEvArgName="tripRowChangeEvent" msprop:Generator_RowClassName="tripRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="route_id" msprop:Generator_ColumnVarNameInTable="columnroute_id" msprop:Generator_ColumnPropNameInRow="route_id" msprop:Generator_ColumnPropNameInTable="route_idColumn" msprop:Generator_UserColumnName="route_id" type="xs:int" minOccurs="0" />
@@ -31,7 +31,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="stop" msprop:Generator_TableClassName="stopDataTable" msprop:Generator_TableVarName="tablestop" msprop:Generator_RowChangedName="stopRowChanged" msprop:Generator_TablePropName="stop" msprop:Generator_RowDeletingName="stopRowDeleting" msprop:Generator_RowChangingName="stopRowChanging" msprop:Generator_RowEvHandlerName="stopRowChangeEventHandler" msprop:Generator_RowDeletedName="stopRowDeleted" msprop:Generator_RowClassName="stopRow" msprop:Generator_UserTableName="stop" msprop:Generator_RowEvArgName="stopRowChangeEvent">
+        <xs:element name="stop" msprop:Generator_TableClassName="stopDataTable" msprop:Generator_TableVarName="tablestop" msprop:Generator_TablePropName="stop" msprop:Generator_RowDeletingName="stopRowDeleting" msprop:Generator_RowChangingName="stopRowChanging" msprop:Generator_RowEvHandlerName="stopRowChangeEventHandler" msprop:Generator_RowDeletedName="stopRowDeleted" msprop:Generator_UserTableName="stop" msprop:Generator_RowChangedName="stopRowChanged" msprop:Generator_RowEvArgName="stopRowChangeEvent" msprop:Generator_RowClassName="stopRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="stop_id" msprop:Generator_ColumnVarNameInTable="columnstop_id" msprop:Generator_ColumnPropNameInRow="stop_id" msprop:Generator_ColumnPropNameInTable="stop_idColumn" msprop:Generator_UserColumnName="stop_id" type="xs:int" />
@@ -43,13 +43,29 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element name="stop_time" msprop:Generator_TableClassName="stop_timeDataTable" msprop:Generator_TableVarName="tablestop_time" msprop:Generator_RowChangedName="stop_timeRowChanged" msprop:Generator_TablePropName="stop_time" msprop:Generator_RowDeletingName="stop_timeRowDeleting" msprop:Generator_RowChangingName="stop_timeRowChanging" msprop:Generator_RowEvHandlerName="stop_timeRowChangeEventHandler" msprop:Generator_RowDeletedName="stop_timeRowDeleted" msprop:Generator_RowClassName="stop_timeRow" msprop:Generator_UserTableName="stop_time" msprop:Generator_RowEvArgName="stop_timeRowChangeEvent">
+        <xs:element name="stop_time" msprop:Generator_TableClassName="stop_timeDataTable" msprop:Generator_TableVarName="tablestop_time" msprop:Generator_TablePropName="stop_time" msprop:Generator_RowDeletingName="stop_timeRowDeleting" msprop:Generator_RowChangingName="stop_timeRowChanging" msprop:Generator_RowEvHandlerName="stop_timeRowChangeEventHandler" msprop:Generator_RowDeletedName="stop_timeRowDeleted" msprop:Generator_UserTableName="stop_time" msprop:Generator_RowChangedName="stop_timeRowChanged" msprop:Generator_RowEvArgName="stop_timeRowChangeEvent" msprop:Generator_RowClassName="stop_timeRow">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="trip_id" msprop:Generator_ColumnVarNameInTable="columntrip_id" msprop:Generator_ColumnPropNameInRow="trip_id" msprop:Generator_ColumnPropNameInTable="trip_idColumn" msprop:Generator_UserColumnName="trip_id" type="xs:int" />
               <xs:element name="departure_time" msprop:Generator_ColumnVarNameInTable="columndeparture_time" msprop:Generator_ColumnPropNameInRow="departure_time" msprop:Generator_ColumnPropNameInTable="departure_timeColumn" msprop:Generator_UserColumnName="departure_time" type="xs:duration" minOccurs="0" />
               <xs:element name="stop_id" msprop:Generator_ColumnVarNameInTable="columnstop_id" msprop:Generator_ColumnPropNameInRow="stop_id" msprop:Generator_ColumnPropNameInTable="stop_idColumn" msprop:Generator_UserColumnName="stop_id" type="xs:int" />
               <xs:element name="stop_sequence" msprop:Generator_ColumnVarNameInTable="columnstop_sequence" msprop:Generator_ColumnPropNameInRow="stop_sequence" msprop:Generator_ColumnPropNameInTable="stop_sequenceColumn" msprop:Generator_UserColumnName="stop_sequence" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="calendar" msprop:Generator_TableClassName="calendarDataTable" msprop:Generator_TableVarName="tablecalendar" msprop:Generator_TablePropName="calendar" msprop:Generator_RowDeletingName="calendarRowDeleting" msprop:Generator_RowChangingName="calendarRowChanging" msprop:Generator_RowEvHandlerName="calendarRowChangeEventHandler" msprop:Generator_RowDeletedName="calendarRowDeleted" msprop:Generator_UserTableName="calendar" msprop:Generator_RowChangedName="calendarRowChanged" msprop:Generator_RowEvArgName="calendarRowChangeEvent" msprop:Generator_RowClassName="calendarRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="service_id" msprop:Generator_ColumnVarNameInTable="columnservice_id" msprop:Generator_ColumnPropNameInRow="service_id" msprop:Generator_ColumnPropNameInTable="service_idColumn" msprop:Generator_UserColumnName="service_id" type="xs:int" />
+              <xs:element name="monday" msprop:Generator_ColumnVarNameInTable="columnmonday" msprop:Generator_ColumnPropNameInRow="monday" msprop:Generator_ColumnPropNameInTable="mondayColumn" msprop:Generator_UserColumnName="monday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="tuesday" msprop:Generator_ColumnVarNameInTable="columntuesday" msprop:Generator_ColumnPropNameInRow="tuesday" msprop:Generator_ColumnPropNameInTable="tuesdayColumn" msprop:Generator_UserColumnName="tuesday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="wednesday" msprop:Generator_ColumnVarNameInTable="columnwednesday" msprop:Generator_ColumnPropNameInRow="wednesday" msprop:Generator_ColumnPropNameInTable="wednesdayColumn" msprop:Generator_UserColumnName="wednesday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="thursday" msprop:Generator_ColumnVarNameInTable="columnthursday" msprop:Generator_ColumnPropNameInRow="thursday" msprop:Generator_ColumnPropNameInTable="thursdayColumn" msprop:Generator_UserColumnName="thursday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="friday" msprop:Generator_ColumnVarNameInTable="columnfriday" msprop:Generator_ColumnPropNameInRow="friday" msprop:Generator_ColumnPropNameInTable="fridayColumn" msprop:Generator_UserColumnName="friday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="saturday" msprop:Generator_ColumnVarNameInTable="columnsaturday" msprop:Generator_ColumnPropNameInRow="saturday" msprop:Generator_ColumnPropNameInTable="saturdayColumn" msprop:Generator_UserColumnName="saturday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="sunday" msprop:Generator_ColumnVarNameInTable="columnsunday" msprop:Generator_ColumnPropNameInRow="sunday" msprop:Generator_ColumnPropNameInTable="sundayColumn" msprop:Generator_UserColumnName="sunday" type="xs:boolean" minOccurs="0" />
+              <xs:element name="start_date" msprop:Generator_ColumnVarNameInTable="columnstart_date" msprop:Generator_ColumnPropNameInRow="start_date" msprop:Generator_ColumnPropNameInTable="start_dateColumn" msprop:Generator_UserColumnName="start_date" type="xs:string" minOccurs="0" />
+              <xs:element name="end_date" msprop:Generator_ColumnVarNameInTable="columnend_date" msprop:Generator_ColumnPropNameInRow="end_date" msprop:Generator_ColumnPropNameInTable="end_dateColumn" msprop:Generator_UserColumnName="end_date" type="xs:string" minOccurs="0" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -67,12 +83,17 @@
       <xs:selector xpath=".//mstns:stop" />
       <xs:field xpath="mstns:stop_id" />
     </xs:unique>
+    <xs:unique name="calendar_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:calendar" />
+      <xs:field xpath="mstns:service_id" />
+    </xs:unique>
   </xs:element>
   <xs:annotation>
     <xs:appinfo>
-      <msdata:Relationship name="FK_route_trip" msdata:parent="route" msdata:child="trip" msdata:parentkey="route_id" msdata:childkey="route_id" msprop:Generator_UserChildTable="trip" msprop:Generator_ChildPropName="GettripRows" msprop:Generator_UserRelationName="FK_route_trip" msprop:Generator_ParentPropName="routeRow" msprop:Generator_RelationVarName="relationFK_route_trip" msprop:Generator_UserParentTable="route" />
-      <msdata:Relationship name="FK_trip_stop_time" msdata:parent="trip" msdata:child="stop_time" msdata:parentkey="trip_id" msdata:childkey="trip_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_trip_stop_time" msprop:Generator_ParentPropName="tripRow" msprop:Generator_RelationVarName="relationFK_trip_stop_time" msprop:Generator_UserParentTable="trip" />
-      <msdata:Relationship name="FK_stop_stop_time" msdata:parent="stop" msdata:child="stop_time" msdata:parentkey="stop_id" msdata:childkey="stop_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_stop_stop_time" msprop:Generator_ParentPropName="stopRow" msprop:Generator_RelationVarName="relationFK_stop_stop_time" msprop:Generator_UserParentTable="stop" />
+      <msdata:Relationship name="FK_route_trip" msdata:parent="route" msdata:child="trip" msdata:parentkey="route_id" msdata:childkey="route_id" msprop:Generator_UserChildTable="trip" msprop:Generator_ChildPropName="GettripRows" msprop:Generator_UserRelationName="FK_route_trip" msprop:Generator_RelationVarName="relationFK_route_trip" msprop:Generator_UserParentTable="route" msprop:Generator_ParentPropName="routeRow" />
+      <msdata:Relationship name="FK_trip_stop_time" msdata:parent="trip" msdata:child="stop_time" msdata:parentkey="trip_id" msdata:childkey="trip_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_trip_stop_time" msprop:Generator_RelationVarName="relationFK_trip_stop_time" msprop:Generator_UserParentTable="trip" msprop:Generator_ParentPropName="tripRow" />
+      <msdata:Relationship name="FK_stop_stop_time" msdata:parent="stop" msdata:child="stop_time" msdata:parentkey="stop_id" msdata:childkey="stop_id" msprop:Generator_UserChildTable="stop_time" msprop:Generator_ChildPropName="Getstop_timeRows" msprop:Generator_UserRelationName="FK_stop_stop_time" msprop:Generator_RelationVarName="relationFK_stop_stop_time" msprop:Generator_UserParentTable="stop" msprop:Generator_ParentPropName="stopRow" />
+      <msdata:Relationship name="FK_trip_calendar" msdata:parent="calendar" msdata:child="trip" msdata:parentkey="service_id" msdata:childkey="service_id" msprop:Generator_UserChildTable="trip" msprop:Generator_ChildPropName="GettripRows" msprop:Generator_UserRelationName="FK_trip_calendar" msprop:Generator_RelationVarName="relationFK_trip_calendar" msprop:Generator_UserParentTable="calendar" msprop:Generator_ParentPropName="calendarRow" />
     </xs:appinfo>
   </xs:annotation>
 </xs:schema>

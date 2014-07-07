@@ -44,6 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataSetGTFS.cs">
+      <DependentUpon>DataSetGTFS.xsd</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DataSetGTFS.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

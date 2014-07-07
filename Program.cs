@@ -86,28 +86,32 @@ namespace GTFSRouteStopMatrix
         public class Stop
         {
             [DataMember(Order = 0)]
-            public Int32 route_id { get; set; }
+            public Int32 service_id { get; set; }
             [DataMember(Order = 1)]
-            public String route_short_name { get; set; }
+            public String days { get; set; }
             [DataMember(Order = 2)]
-            public String route_long_name { get; set; }
+            public Int32 route_id { get; set; }
             [DataMember(Order = 3)]
-            public Int32 direction_id { get; set; }
+            public String route_short_name { get; set; }
             [DataMember(Order = 4)]
-            public Int32? stop_sequence { get; set; }
+            public String route_long_name { get; set; }
             [DataMember(Order = 5)]
-            public Int32 stop_id { get; set; }
+            public Int32 direction_id { get; set; }
             [DataMember(Order = 6)]
-            public String stop_code { get; set; }
+            public Int32? stop_sequence { get; set; }
             [DataMember(Order = 7)]
-            public String stop_name { get; set; }
+            public Int32 stop_id { get; set; }
             [DataMember(Order = 8)]
-            public String stop_desc { get; set; }
+            public String stop_code { get; set; }
             [DataMember(Order = 9)]
-            public Decimal stop_lat { get; set; }
+            public String stop_name { get; set; }
             [DataMember(Order = 10)]
-            public Decimal stop_lon { get; set; }
+            public String stop_desc { get; set; }
             [DataMember(Order = 11)]
+            public Decimal stop_lat { get; set; }
+            [DataMember(Order = 12)]
+            public Decimal stop_lon { get; set; }
+            [DataMember(Order = 13)]
             public List<TripTime> stop_times { get; set; }
             public Boolean stop_times_sorted { get; set; }
             public Stop()
@@ -141,7 +145,9 @@ namespace GTFSRouteStopMatrix
                         var fieldValue = fields[fieldReference];
                         try
                         {
-                            if (table.Columns[index].DataType == typeof(DateTime))
+                            if (table.Columns[index].DataType == typeof(Boolean))
+                                newRow[index] = Convert.ToBoolean(Int32.Parse(fieldValue));
+                            else if (table.Columns[index].DataType == typeof(DateTime))
                                 newRow[index] = DateTime.Parse(fieldValue);
                             else if (table.Columns[index].DataType == typeof(Decimal))
                                 newRow[index] = Decimal.Parse(fieldValue);
@@ -169,7 +175,7 @@ namespace GTFSRouteStopMatrix
             if (args.Length == 5)
             {
                 var GTFSPath = args[0];
-                var service_id = Int32.Parse(args[1]);
+                //var service_id = Int32.Parse(args[1]);
                 var CSVPath = args[2];
                 var JSONPath = args[3];
                 var XMLPath = args[4];
@@ -182,6 +188,9 @@ namespace GTFSRouteStopMatrix
                         Console.WriteLine(entry.Name);
                         switch (entry.Name)
                         {
+                            case "calendar.txt":
+                                LoadTable(dataSet.calendar, entry);
+                                break;
                             case "routes.txt":
                                 LoadTable(dataSet.route, entry);
                                 break;
@@ -198,135 +207,140 @@ namespace GTFSRouteStopMatrix
                     }
                 }
                 var stopCollection = new StopCollection();
-                foreach (var route in dataSet.route.Rows.Cast<DataSetGTFS.routeRow>())
+                foreach (var calendar in dataSet.calendar.Rows.Cast<DataSetGTFS.calendarRow>().Where(item => item.AnyDaysSelected))
                 {
-                    foreach (var direction_id in new Int32[] { 0, 1 })
+                    foreach (var route in dataSet.route.Rows.Cast<DataSetGTFS.routeRow>())
                     {
-                        var direction_trips = route.GettripRows().Where(item => item.service_id.Equals(service_id) && item.direction_id.Equals(direction_id)).ToArray();
-                        if (direction_trips.Length > 0)
+                        foreach (var direction_id in new Int32[] { 0, 1 })
                         {
-                            var localStopCollection = dataSet.stop.Cast<DataSetGTFS.stopRow>().Select(item => new Stop { route_id = route.route_id, route_short_name = route.route_short_name, route_long_name = route.route_long_name, direction_id = direction_id, stop_id = item.stop_id, stop_code = item.stop_code, stop_name = item.stop_name, stop_desc = item.stop_desc, stop_lat = item.stop_lat, stop_lon = item.stop_lon }).ToList();
-                            foreach (var trip in direction_trips)
+                            var direction_trips = route.GettripRows().Where(item => item.service_id.Equals(calendar.service_id) && item.direction_id.Equals(direction_id)).ToArray();
+                            if (direction_trips.Length > 0)
                             {
-                                var trip_stop_times = trip.Getstop_timeRows().OrderBy(item => item.stop_sequence);
-                                Console.WriteLine(String.Format("{0}\t{1}\t{2}", route.route_short_name, direction_id, trip.trip_id));
-                                if (localStopCollection.Any(item => item.stop_sequence.HasValue))
+                                var localStopCollection = dataSet.stop.Cast<DataSetGTFS.stopRow>().Select(item => new Stop { service_id = calendar.service_id, days = String.Join(", ", calendar.SelectedDays), route_id = route.route_id, route_short_name = route.route_short_name, route_long_name = route.route_long_name, direction_id = direction_id, stop_id = item.stop_id, stop_code = item.stop_code, stop_name = item.stop_name, stop_desc = item.stop_desc, stop_lat = item.stop_lat, stop_lon = item.stop_lon }).ToList();
+                                foreach (var trip in direction_trips)
                                 {
-                                    // here's the interesting part - for each subsequent trip on a route, reorder portions of the localStopCollection stops to wedge in stops that were not already in the sequence
-                                    // first, make sure we have an anchor point (at least one of the stop_id's in our new trip has been sequenced from a previous trip, otherwise we're lost
-                                    var newStopIDs = trip_stop_times.Select(item => item.stop_id).ToArray();
-                                    if (localStopCollection.Any(item => item.stop_sequence.HasValue && newStopIDs.Contains(item.stop_id)))
+                                    var trip_stop_times = trip.Getstop_timeRows().OrderBy(item => item.stop_sequence);
+                                    Console.WriteLine(String.Format("{0}\t{1}\t{2}", route.route_short_name, direction_id, trip.trip_id));
+                                    if (localStopCollection.Any(item => item.stop_sequence.HasValue))
                                     {
-                                        var pendingStops = new Queue<DataSetGTFS.stop_timeRow>();
+                                        // here's the interesting part - for each subsequent trip on a route, reorder portions of the localStopCollection stops to wedge in stops that were not already in the sequence
+                                        // first, make sure we have an anchor point (at least one of the stop_id's in our new trip has been sequenced from a previous trip, otherwise we're lost
+                                        var newStopIDs = trip_stop_times.Select(item => item.stop_id).ToArray();
+                                        if (localStopCollection.Any(item => item.stop_sequence.HasValue && newStopIDs.Contains(item.stop_id)))
+                                        {
+                                            var pendingStops = new Queue<DataSetGTFS.stop_timeRow>();
+                                            foreach (var trip_stop_time in trip_stop_times)
+                                            {
+                                                //var stop_id = (Int32)trip_stop_time["stop_id"];
+                                                var existingStop = localStopCollection.Single(item => item.stop_id.Equals(trip_stop_time.stop_id));
+                                                if (existingStop.stop_sequence.HasValue)
+                                                {
+                                                    try
+                                                    {
+                                                        existingStop.stop_times.Add(new TripTime { trip_id = trip_stop_time.trip_id, stop_time = trip_stop_time.departure_time });
+                                                    }
+                                                    catch { }
+                                                    var currentSequence = existingStop.stop_sequence.Value;
+                                                    while (pendingStops.Count > 0)
+                                                    {
+                                                        // we need to shift all the later sequences up in localStopCollection for each pending stop
+                                                        var upperPortion = localStopCollection.Where(item => item.stop_sequence >= currentSequence).ToList();
+                                                        upperPortion.ForEach(item => item.stop_sequence++);
+                                                        var pendingStop = pendingStops.Dequeue();
+                                                        var newStop = localStopCollection.Single(item => item.stop_id.Equals(pendingStop.stop_id));
+                                                        newStop.stop_sequence = currentSequence;
+                                                        newStop.stop_times.Add(new TripTime { trip_id = pendingStop.trip_id, stop_time = pendingStop.departure_time });
+                                                        currentSequence++;
+                                                    }
+                                                }
+                                                else
+                                                    pendingStops.Enqueue(trip_stop_time);
+                                            }
+                                            while (pendingStops.Count > 0)
+                                            {
+                                                // we need to append any stops not already represented in the existing trips
+                                                var pendingStop = pendingStops.Dequeue();
+                                                var newStop = localStopCollection.Single(item => item.stop_id.Equals(pendingStop.stop_id));
+                                                newStop.stop_sequence = localStopCollection.Where(item => item.stop_sequence.HasValue).Max(item => item.stop_sequence.Value) + 1;
+                                                newStop.stop_times.Add(new TripTime { trip_id = pendingStop.trip_id, stop_time = pendingStop.departure_time });
+                                            }
+
+                                        }
+                                        // else we don't know what to do yet
+                                    }
+                                    else
+                                    {
                                         foreach (var trip_stop_time in trip_stop_times)
                                         {
-                                            //var stop_id = (Int32)trip_stop_time["stop_id"];
-                                            var existingStop = localStopCollection.Single(item => item.stop_id.Equals(trip_stop_time.stop_id));
-                                            if (existingStop.stop_sequence.HasValue)
+                                            var stop_id = trip_stop_time.stop_id;
+                                            var stop_sequence = trip_stop_time.stop_sequence;
+                                            var localStop = localStopCollection.Single(item => item.stop_id.Equals(stop_id));
+                                            localStop.stop_sequence = stop_sequence;
+                                            localStop.stop_times.Add(new TripTime { trip_id = trip_stop_time.trip_id, stop_time = trip_stop_time.departure_time });
+                                        }
+                                    }
+                                }
+                                var activeStopCollection = localStopCollection.Where(item => item.stop_sequence.HasValue).OrderBy(item => item.stop_sequence).ToArray();
+                                var max_stop_sequence = activeStopCollection.Max(item => item.stop_sequence.Value);
+                                // build trip stop matrix
+                                var trip_stop_matrix = new List<TripTimes>();
+                                List<TripTimes> trip_stop_matrix_sorted = null;
+                                foreach (var trip in direction_trips)
+                                {
+                                    var tripTimes = new TripTimes { trip_id = trip.trip_id, stop_times = new TimeSpan?[max_stop_sequence] };
+                                    foreach (var activeStop in activeStopCollection)
+                                    {
+                                        var theseStops = trip.Getstop_timeRows().ToList();
+                                        var trip_stop_time = theseStops.FirstOrDefault(item => item.stop_id == activeStop.stop_id);
+                                        if (trip_stop_time != null)
+                                        {
+                                            try
                                             {
-                                                try
-                                                {
-                                                    existingStop.stop_times.Add(new TripTime { trip_id = trip_stop_time.trip_id, stop_time = trip_stop_time.departure_time });
-                                                }
-                                                catch { }
-                                                var currentSequence = existingStop.stop_sequence.Value;
-                                                while (pendingStops.Count > 0)
-                                                {
-                                                    // we need to shift all the later sequences up in localStopCollection for each pending stop
-                                                    var upperPortion = localStopCollection.Where(item => item.stop_sequence >= currentSequence).ToList();
-                                                    upperPortion.ForEach(item => item.stop_sequence++);
-                                                    var pendingStop = pendingStops.Dequeue();
-                                                    var newStop = localStopCollection.Single(item => item.stop_id.Equals(pendingStop.stop_id));
-                                                    newStop.stop_sequence = currentSequence;
-                                                    newStop.stop_times.Add(new TripTime { trip_id = pendingStop.trip_id, stop_time = pendingStop.departure_time });
-                                                    currentSequence++;
-                                                }
+                                                tripTimes.stop_times[activeStop.stop_sequence.Value - 1] = trip_stop_time.departure_time;
+                                                theseStops.Remove(trip_stop_time); // we need to account for looping routes (a stop may occur twice);
                                             }
-                                            else
-                                                pendingStops.Enqueue(trip_stop_time);
-                                        }
-                                        while (pendingStops.Count > 0)
-                                        {
-                                            // we need to append any stops not already represented in the existing trips
-                                            var pendingStop = pendingStops.Dequeue();
-                                            var newStop = localStopCollection.Single(item => item.stop_id.Equals(pendingStop.stop_id));
-                                            newStop.stop_sequence = localStopCollection.Where(item => item.stop_sequence.HasValue).Max(item => item.stop_sequence.Value) + 1;
-                                            newStop.stop_times.Add(new TripTime { trip_id = pendingStop.trip_id, stop_time = pendingStop.departure_time });
-                                        }
+                                            catch
+                                            {
 
-                                    }
-                                    // else we don't know what to do yet
-                                }
-                                else
-                                {
-                                    foreach (var trip_stop_time in trip_stop_times)
-                                    {
-                                        var stop_id = trip_stop_time.stop_id;
-                                        var stop_sequence = trip_stop_time.stop_sequence;
-                                        var localStop = localStopCollection.Single(item => item.stop_id.Equals(stop_id));
-                                        localStop.stop_sequence = stop_sequence;
-                                        localStop.stop_times.Add(new TripTime { trip_id = trip_stop_time.trip_id, stop_time = trip_stop_time.departure_time });
-                                    }
-                                }
-                            }
-                            var activeStopCollection = localStopCollection.Where(item => item.stop_sequence.HasValue).OrderBy(item => item.stop_sequence).ToArray();
-                            var max_stop_sequence = activeStopCollection.Max(item => item.stop_sequence.Value);
-                            // build trip stop matrix
-                            var trip_stop_matrix = new List<TripTimes>();
-                            List<TripTimes> trip_stop_matrix_sorted = null;
-                            foreach (var trip in direction_trips)
-                            {
-                                var tripTimes = new TripTimes { trip_id = trip.trip_id, stop_times = new TimeSpan?[max_stop_sequence] };
-                                foreach (var activeStop in activeStopCollection)
-                                {
-                                    var theseStops = trip.Getstop_timeRows().ToList();
-                                    var trip_stop_time = theseStops.FirstOrDefault(item => item.stop_id == activeStop.stop_id);
-                                    if (trip_stop_time != null)
-                                    {
-                                        try
-                                        {
-                                            tripTimes.stop_times[activeStop.stop_sequence.Value - 1] = trip_stop_time.departure_time;
-                                            theseStops.Remove(trip_stop_time); // we need to account for looping routes (a stop may occur twice);
-                                        }
-                                        catch
-                                        {
-
+                                            }
                                         }
                                     }
+                                    trip_stop_matrix.Add(tripTimes);
                                 }
-                                trip_stop_matrix.Add(tripTimes);
-                            }
-                            for (var index = 0; index < max_stop_sequence; index++)
-                            {
-                                if (trip_stop_matrix.All(item => item.stop_times[index].HasValue))
+                                for (var index = 0; index < max_stop_sequence; index++)
                                 {
-                                    trip_stop_matrix_sorted = trip_stop_matrix.OrderBy(item => item.stop_times[index].Value).ToList();
-                                    break;
-                                }
-                            }
-                            if (trip_stop_matrix_sorted != null)
-                            {
-                                foreach (var stop in activeStopCollection)
-                                {
-                                    stop.stop_times = new List<TripTime>();
-                                    foreach (var trip in trip_stop_matrix_sorted)
+                                    if (trip_stop_matrix.All(item => item.stop_times[index].HasValue))
                                     {
-                                        stop.stop_times.Add(new TripTime { trip_id = trip.trip_id, stop_time = trip.stop_times[stop.stop_sequence.Value - 1].HasValue ? trip.stop_times[stop.stop_sequence.Value - 1].Value : (TimeSpan?)null });
+                                        trip_stop_matrix_sorted = trip_stop_matrix.OrderBy(item => item.stop_times[index].Value).ToList();
+                                        break;
                                     }
-                                    stop.stop_times_sorted = true;
                                 }
+                                if (trip_stop_matrix_sorted != null)
+                                {
+                                    foreach (var stop in activeStopCollection)
+                                    {
+                                        stop.stop_times = new List<TripTime>();
+                                        foreach (var trip in trip_stop_matrix_sorted)
+                                        {
+                                            stop.stop_times.Add(new TripTime { trip_id = trip.trip_id, stop_time = trip.stop_times[stop.stop_sequence.Value - 1].HasValue ? trip.stop_times[stop.stop_sequence.Value - 1].Value : (TimeSpan?)null });
+                                        }
+                                        stop.stop_times_sorted = true;
+                                    }
+                                }
+                                stopCollection.AddRange(activeStopCollection);
                             }
-                            stopCollection.AddRange(activeStopCollection);
                         }
                     }
                 }
                 var direction = new String[] { "Outbound", "Inbound" };
                 using (var output = File.CreateText(CSVPath))
                 {
-                    output.WriteLine("route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
-                    foreach (var stop in stopCollection.OrderBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
+                    output.WriteLine("service_id,days,route_id,route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
+                    foreach (var stop in stopCollection.OrderBy(item=>item.service_id).ThenBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
                     {
-                        output.WriteLine(String.Format("\"{1}\",\"{2}\",\"{3}\",{4},{5},\"{6}\",\"{7}\",\"{8}\",{9},{10},\"{11}\"",
+                        output.WriteLine(String.Format("{0},\"{1}\",{2},\"{3}\",\"{4}\",\"{5}\",{6},{7},\"{8}\",\"{9}\",\"{10}\",{11},{12},\"{13}\"",
+                            stop.service_id,
+                            stop.days,
                             stop.route_id,
                             stop.route_short_name,
                             stop.route_long_name,
@@ -372,36 +386,40 @@ namespace GTFSRouteStopMatrix
                         new XElement(o + "OfficeDocumentSettings", new XAttribute(XName.Get("xmlns", ""), o)),
                         new XElement(x + "ExcelWorkbook", new XAttribute(XName.Get("xmlns", ""), x)));
 
-                    var routeCollection = stopCollection.Where(item => item.stop_times_sorted).GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) });
-                    foreach (var thisRoute in routeCollection)
+                    var calendarCollection = stopCollection.Where(item => item.stop_times_sorted).GroupBy(item => item.service_id).Select(services => new { service_id = services.Key, routes = services.GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) }) });
+                    //var routeCollection = stopCollection.Where(item => item.stop_times_sorted).GroupBy(item => item.route_short_name).Select(directions => new { route_short_name = directions.Key, directions = directions.GroupBy(item => item.direction_id).Select(groupDirection => new { direction_id = groupDirection.Key, stops = groupDirection }) });
+                    foreach (var thisCalendar in calendarCollection)
                     {
-                        foreach (var thisDirection in thisRoute.directions)
+                        foreach (var thisRoute in thisCalendar.routes)
                         {
-                            var worksheet = new XElement(mainNamespace + "Worksheet", new XAttribute(ss + "Name", String.Format("{0} - {1}", thisRoute.route_short_name, direction[thisDirection.direction_id])));
-                            var table = new XElement(mainNamespace + "Table");
+                            foreach (var thisDirection in thisRoute.directions)
                             {
-                                var headerRow = new XElement(mainNamespace + "Row");
-                                foreach (var stop in thisDirection.stops)
+                                var worksheet = new XElement(mainNamespace + "Worksheet", new XAttribute(ss + "Name", String.Format("{0} - {1} - {2}", thisCalendar.service_id, thisRoute.route_short_name, direction[thisDirection.direction_id])));
+                                var table = new XElement(mainNamespace + "Table");
                                 {
-                                    var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop.stop_desc));
-                                    headerRow.Add(cell);
+                                    var headerRow = new XElement(mainNamespace + "Row");
+                                    foreach (var stop in thisDirection.stops)
+                                    {
+                                        var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop.stop_desc));
+                                        headerRow.Add(cell);
+                                    }
+                                    table.Add(headerRow);
                                 }
-                                table.Add(headerRow);
-                            }
-                            var maxSequence = thisDirection.stops.First().stop_times.Count;
-                            for (var index = 0; index < maxSequence; index++)
-                            {
-                                var row = new XElement(mainNamespace + "Row");
-                                foreach (var stop in thisDirection.stops)
+                                var maxSequence = thisDirection.stops.First().stop_times.Count;
+                                for (var index = 0; index < maxSequence; index++)
                                 {
-                                    var stop_time = stop.stop_times[index];
-                                    var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop_time.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(stop_time.stop_time.Value.ToString(), 8) : "--:--:--"));
-                                    row.Add(cell);
+                                    var row = new XElement(mainNamespace + "Row");
+                                    foreach (var stop in thisDirection.stops)
+                                    {
+                                        var stop_time = stop.stop_times[index];
+                                        var cell = new XElement(mainNamespace + "Cell", new XElement(mainNamespace + "Data", new XAttribute(ss + "Type", "String"), stop_time.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(stop_time.stop_time.Value.ToString(), 8) : "--:--:--"));
+                                        row.Add(cell);
+                                    }
+                                    table.Add(row);
                                 }
-                                table.Add(row);
+                                worksheet.Add(table);
+                                workbook.Add(worksheet);
                             }
-                            worksheet.Add(table);
-                            workbook.Add(worksheet);
                         }
                     }
                     spreadsheetDocument.Add(workbook);
