@@ -68,6 +68,8 @@ namespace GTFSRouteStopMatrix
         {
             [DataMember]
             public Int32 trip_id { get; set; }
+            [DataMember]
+            public Int32 trip_sequence { get; set; }
             public TimeSpan? stop_time { get; set; }
             [DataMember(Name = "stop_time")]
             private String stop_time_string;
@@ -80,6 +82,7 @@ namespace GTFSRouteStopMatrix
         public class TripTimes
         {
             public Int32 trip_id { get; set; }
+            public Int32 trip_sequence { get; set; }
             public TimeSpan?[] stop_times { get; set; } //indexed by stop sequence
         }
         [DataContract]
@@ -87,37 +90,61 @@ namespace GTFSRouteStopMatrix
         {
             [DataMember(Order = 0)]
             public Int32 service_id { get; set; }
-            [DataMember(Order = 1)]
-            public String days { get; set; }
-            [DataMember(Order = 2)]
-            public Int32 route_id { get; set; }
+            [DataMember(Name = "start_date", Order = 1)]
+            public String start_date_string { get; set; }
+            public DateTime start_date { get; set; }
+            [DataMember(Name = "end_date", Order = 2)]
+            public String end_date_string { get; set; }
+            public DateTime end_date { get; set; }
             [DataMember(Order = 3)]
-            public String route_short_name { get; set; }
+            public Boolean monday { get; set; }
             [DataMember(Order = 4)]
-            public String route_long_name { get; set; }
+            public Boolean tuesday { get; set; }
             [DataMember(Order = 5)]
-            public Int32 direction_id { get; set; }
+            public Boolean wednesday { get; set; }
             [DataMember(Order = 6)]
-            public Int32? stop_sequence { get; set; }
+            public Boolean thursday { get; set; }
             [DataMember(Order = 7)]
-            public Int32 stop_id { get; set; }
+            public Boolean friday { get; set; }
             [DataMember(Order = 8)]
-            public String stop_code { get; set; }
+            public Boolean saturday { get; set; }
             [DataMember(Order = 9)]
-            public String stop_name { get; set; }
+            public Boolean sunday { get; set; }
             [DataMember(Order = 10)]
-            public String stop_desc { get; set; }
+            public Int32 route_id { get; set; }
             [DataMember(Order = 11)]
-            public Decimal stop_lat { get; set; }
+            public String route_short_name { get; set; }
             [DataMember(Order = 12)]
-            public Decimal stop_lon { get; set; }
+            public String route_long_name { get; set; }
             [DataMember(Order = 13)]
+            public Int32 direction_id { get; set; }
+            [DataMember(Order = 14)]
+            public Int32? stop_sequence { get; set; }
+            [DataMember(Order = 15)]
+            public Int32 stop_id { get; set; }
+            [DataMember(Order = 16)]
+            public String stop_code { get; set; }
+            [DataMember(Order = 17)]
+            public String stop_name { get; set; }
+            [DataMember(Order = 18)]
+            public String stop_desc { get; set; }
+            [DataMember(Order = 19)]
+            public Decimal stop_lat { get; set; }
+            [DataMember(Order = 20)]
+            public Decimal stop_lon { get; set; }
+            [DataMember(Order = 21)]
             public List<TripTime> stop_times { get; set; }
             public Boolean stop_times_sorted { get; set; }
             public Stop()
             {
                 stop_times = new List<TripTime>();
                 stop_times_sorted = false;
+            }
+            [OnSerializing]
+            internal void OnSerializingMethod(StreamingContext context)
+            {
+                this.start_date_string = this.start_date.ToString("yyyy-MM-dd");
+                this.end_date_string = this.end_date.ToString("yyyy-MM-dd");
             }
         }
 
@@ -148,7 +175,9 @@ namespace GTFSRouteStopMatrix
                             if (table.Columns[index].DataType == typeof(Boolean))
                                 newRow[index] = Convert.ToBoolean(Int32.Parse(fieldValue));
                             else if (table.Columns[index].DataType == typeof(DateTime))
-                                newRow[index] = DateTime.Parse(fieldValue);
+                            {
+                                newRow[index] = new DateTime(Int32.Parse(fieldValue.Substring(0, 4)), Int32.Parse(fieldValue.Substring(4, 2)), Int32.Parse(fieldValue.Substring(6, 2)));
+                            }
                             else if (table.Columns[index].DataType == typeof(Decimal))
                                 newRow[index] = Decimal.Parse(fieldValue);
                             else if (table.Columns[index].DataType == typeof(Double))
@@ -216,7 +245,7 @@ namespace GTFSRouteStopMatrix
                             var direction_trips = route.GettripRows().Where(item => item.service_id.Equals(calendar.service_id) && item.direction_id.Equals(direction_id)).ToArray();
                             if (direction_trips.Length > 0)
                             {
-                                var localStopCollection = dataSet.stop.Cast<DataSetGTFS.stopRow>().Select(item => new Stop { service_id = calendar.service_id, days = String.Join(", ", calendar.SelectedDays), route_id = route.route_id, route_short_name = route.route_short_name, route_long_name = route.route_long_name, direction_id = direction_id, stop_id = item.stop_id, stop_code = item.stop_code, stop_name = item.stop_name, stop_desc = item.stop_desc, stop_lat = item.stop_lat, stop_lon = item.stop_lon }).ToList();
+                                var localStopCollection = dataSet.stop.Cast<DataSetGTFS.stopRow>().Select(item => new Stop { service_id = calendar.service_id, start_date = calendar.start_date, end_date = calendar.end_date, monday = calendar.monday, tuesday = calendar.tuesday, wednesday = calendar.wednesday, thursday = calendar.thursday, friday = calendar.friday, saturday = calendar.saturday, sunday = calendar.sunday, route_id = route.route_id, route_short_name = route.route_short_name, route_long_name = route.route_long_name, direction_id = direction_id, stop_id = item.stop_id, stop_code = item.stop_code, stop_name = item.stop_name, stop_desc = item.stop_desc, stop_lat = item.stop_lat, stop_lon = item.stop_lon }).ToList();
                                 foreach (var trip in direction_trips)
                                 {
                                     var trip_stop_times = trip.Getstop_timeRows().OrderBy(item => item.stop_sequence);
@@ -311,7 +340,9 @@ namespace GTFSRouteStopMatrix
                                 {
                                     if (trip_stop_matrix.All(item => item.stop_times[index].HasValue))
                                     {
+                                        var trip_sequence=0;
                                         trip_stop_matrix_sorted = trip_stop_matrix.OrderBy(item => item.stop_times[index].Value).ToList();
+                                        trip_stop_matrix_sorted.ForEach(item => item.trip_sequence = trip_sequence++);
                                         break;
                                     }
                                 }
@@ -322,7 +353,7 @@ namespace GTFSRouteStopMatrix
                                         stop.stop_times = new List<TripTime>();
                                         foreach (var trip in trip_stop_matrix_sorted)
                                         {
-                                            stop.stop_times.Add(new TripTime { trip_id = trip.trip_id, stop_time = trip.stop_times[stop.stop_sequence.Value - 1].HasValue ? trip.stop_times[stop.stop_sequence.Value - 1].Value : (TimeSpan?)null });
+                                            stop.stop_times.Add(new TripTime { trip_id = trip.trip_id, trip_sequence = trip.trip_sequence, stop_time = trip.stop_times[stop.stop_sequence.Value - 1].HasValue ? trip.stop_times[stop.stop_sequence.Value - 1].Value : (TimeSpan?)null });
                                         }
                                         stop.stop_times_sorted = true;
                                     }
@@ -335,12 +366,20 @@ namespace GTFSRouteStopMatrix
                 var direction = new String[] { "Outbound", "Inbound" };
                 using (var output = File.CreateText(CSVPath))
                 {
-                    output.WriteLine("service_id,days,route_id,route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
+                    output.WriteLine("service_id,start_date,end_date,monday,tuesday,wednesday,thursday,friday,saturday,sunday,route_id,route_short_name,route_long_name,direction,stop_sequence,stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,stop_times");
                     foreach (var stop in stopCollection.OrderBy(item=>item.service_id).ThenBy(item => item.route_short_name).ThenBy(item => item.direction_id).ThenBy(item => item.stop_sequence))
                     {
-                        output.WriteLine(String.Format("{0},\"{1}\",{2},\"{3}\",\"{4}\",\"{5}\",{6},{7},\"{8}\",\"{9}\",\"{10}\",{11},{12},\"{13}\"",
+                        String outputLine = String.Format("{0},\"{1}\",\"{2}\",{3},{4},{5},{6},{7},{8},{9},{10},\"{11}\",\"{12}\",\"{13}\",{14},{15},\"{16}\",\"{17}\",\"{18}\",{19},{20},\"{21}\"",
                             stop.service_id,
-                            stop.days,
+                            stop.start_date,
+                            stop.end_date,
+                            stop.monday,
+                            stop.tuesday,
+                            stop.wednesday,
+                            stop.thursday,
+                            stop.friday,
+                            stop.saturday,
+                            stop.sunday,
                             stop.route_id,
                             stop.route_short_name,
                             stop.route_long_name,
@@ -354,7 +393,8 @@ namespace GTFSRouteStopMatrix
                             stop.stop_lon,
                             stop.stop_times_sorted ?
                             String.Join(", ", stop.stop_times.Select(trip_time => trip_time.stop_time.HasValue ? Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(), 8) : "--:--:--").ToArray()) :
-                            String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(), 8)).ToArray())));
+                            String.Join(", ", stop.stop_times.OrderBy(trip_time => trip_time.stop_time).Select(trip_time => Microsoft.VisualBasic.Strings.Right(trip_time.stop_time.Value.ToString(), 8)).ToArray()));
+                        output.WriteLine(outputLine);
                     }
                 }
                 using (var output = File.Create(JSONPath))

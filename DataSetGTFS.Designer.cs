@@ -1834,7 +1834,7 @@ namespace GTFSRouteStopMatrix {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public calendarRow AddcalendarRow(int service_id, bool monday, bool tuesday, bool wednesday, bool thursday, bool friday, bool saturday, bool sunday, string start_date, string end_date) {
+            public calendarRow AddcalendarRow(int service_id, bool monday, bool tuesday, bool wednesday, bool thursday, bool friday, bool saturday, bool sunday, System.DateTime start_date, System.DateTime end_date) {
                 calendarRow rowcalendarRow = ((calendarRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         service_id,
@@ -1907,9 +1907,9 @@ namespace GTFSRouteStopMatrix {
                 base.Columns.Add(this.columnsaturday);
                 this.columnsunday = new global::System.Data.DataColumn("sunday", typeof(bool), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnsunday);
-                this.columnstart_date = new global::System.Data.DataColumn("start_date", typeof(string), null, global::System.Data.MappingType.Element);
+                this.columnstart_date = new global::System.Data.DataColumn("start_date", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnstart_date);
-                this.columnend_date = new global::System.Data.DataColumn("end_date", typeof(string), null, global::System.Data.MappingType.Element);
+                this.columnend_date = new global::System.Data.DataColumn("end_date", typeof(global::System.DateTime), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnend_date);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnservice_id}, true));
@@ -2708,10 +2708,10 @@ namespace GTFSRouteStopMatrix {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public string start_date {
+            public System.DateTime start_date {
                 get {
                     try {
-                        return ((string)(this[this.tablecalendar.start_dateColumn]));
+                        return ((global::System.DateTime)(this[this.tablecalendar.start_dateColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
                         throw new global::System.Data.StrongTypingException("The value for column \'start_date\' in table \'calendar\' is DBNull.", e);
@@ -2724,10 +2724,10 @@ namespace GTFSRouteStopMatrix {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public string end_date {
+            public System.DateTime end_date {
                 get {
                     try {
-                        return ((string)(this[this.tablecalendar.end_dateColumn]));
+                        return ((global::System.DateTime)(this[this.tablecalendar.end_dateColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
                         throw new global::System.Data.StrongTypingException("The value for column \'end_date\' in table \'calendar\' is DBNull.", e);
